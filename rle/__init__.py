@@ -1,36 +1,82 @@
-from itertools import groupby
+"""Run-length encoding
 
-import numpy as np
+Bytes are stored like this:
 
 
-def rle_code(istream):
-    ostream = bytearray()
-    for char, same in groupby(istream):
+   Count unique bytes
+
+  ┌─────────────┐   ┌─────────────┐     ┌─────────────┐
+  │0   count - 1│   │     'a'     │ ... │     'z'     │
+  └─────────────┘   └─────────────┘     └─────────────┘
+
+
+   Count identical bytes
+
+  ┌─────────────┐   ┌─────────────┐
+  │1   count - 1│   │     'a'     │
+  └─────────────┘   └─────────────┘
+
+
+High bit is 0 for unique byte sequence and 1 for identical byte sequence.
+
+The lower bits store count - 1 times to do nothing or to repeat next byte.
+
+The combination of these two options forms the encoding.
+
+Examples
+--------
+>>> import rle
+>>> rle.decode(rle.code(b'aaaabccc'))
+"""
+
+import itertools
+
+
+def code(ibytes):
+    def flush_uniques():
+        nonlocal uniques, obytes
+
+        while uniques:
+            obytes.append(len(uniques[:128]) - 1)
+            obytes.extend(uniques[:128])
+            del uniques[:128]
+
+    obytes = bytearray()
+    uniques = bytearray()
+
+    for byte, same in itertools.groupby(ibytes):
         count = sum(1 for _ in same)
-        ostream.extend(int2bytes(count))
-        ostream.append(char)
 
-    return ostream
+        if count == 1:
+            uniques.append(byte)
+        else:
+            flush_uniques()
 
+            while count:
+                portion = min(count, 128)
 
-def rle_decode(istream):
-    ostream = []
-    for count_char in np.array(istream).reshape(-1, 5):
-        count = bytes2int(count_char[:4])
-        char = count_char[4]
-        ostream.extend([char] * count)
+                obytes.append(0x80 + portion - 1)
+                obytes.append(byte)
+                count -= portion
 
-    return np.array(ostream)
+    flush_uniques()
 
-
-def int2bytes(u32):
-    return bytearray([
-            (u32 >> 24) & 0xFF,
-            (u32 >> 16) & 0xFF,
-            (u32 >> 8 ) & 0xFF,
-            (u32 >> 0 ) & 0xFF])
+    return obytes
 
 
-def bytes2int(b):
-    return (b[0] << 24) + (b[1] << 16) + (b[2] << 8) + b[3]
+def decode(ibytes):
+    obytes = bytearray()
+
+    while ibytes:
+        byte = ibytes.pop(0)
+        count = (byte & 0x7f) + 1
+
+        if byte & 0x80:
+            byte = ibytes.pop(0)
+            obytes.extend([byte] * count)
+        else:
+            for _ in range(count):
+                obytes.append(ibytes.pop(0))
+
+    return obytes
 
