@@ -1,6 +1,6 @@
 from heapq import heappush, heappop, heapify
 
-from .bitbuffer import BitBuffer
+from huffman.bitbuffer import BitBuffer
 
 
 class Node:
@@ -26,23 +26,23 @@ class Leaf(Node):
     @property
     def code(self):
         code = ""
-        n = self
-        while n.parent is not None:
-            codebit = "0" if n is n.parent.left else "1"
+        cur = self
+        while cur.parent is not None:
+            codebit = "0" if cur is cur.parent.left else "1"
             code = codebit + code
-            n = n.parent
+            cur = cur.parent
 
         return code
 
 
 def preorder(root):
-    if type(root) == Leaf:
+    if isinstance(root, Leaf):
         return [root]
 
     return preorder(root.left) + preorder(root.right)
 
 
-def codes(symbolweights):
+def make_codes(symbolweights):
     leaves = [Leaf(symbol, weight) for symbol, weight in symbolweights.items()]
 
     heapify(leaves)
@@ -56,33 +56,32 @@ def codes(symbolweights):
     return {l.symbol: l.code for l in leaves}
 
 
-def code(s, codes):
-    b = BitBuffer()
+def code(string, codes):
+    bbuf = BitBuffer()
     length = 0
 
-    for c in s:
-        for bit in codes[c]:
-            b.push(int(bit))
+    for char in string:
+        for bit in codes[char]:
+            bbuf.push(int(bit))
             length += 1
-    
-    return length, b.to_bytearray()
+
+    return length, bbuf.to_bytearray()
 
 
-def decode(b, codes, length):
+def decode(bytes_, codes, length):
     inverse_codes = {v: k for k, v in codes.items()}
-    b = BitBuffer(b)
-    
-    s = bytearray()
-    
+    bbuf = BitBuffer(bytes_)
+
+    string = bytearray()
+
     while length:
-        code = str(b.pop())
+        code = str(bbuf.pop())
         length -= 1
         while not code in inverse_codes.keys():
-            code += str(b.pop())
+            code += str(bbuf.pop())
             length -= 1
-        c = inverse_codes[code]
-        
-        s.append(c)
-    
-    return s
+        char = inverse_codes[code]
 
+        string.append(char)
+
+    return string

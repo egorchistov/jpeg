@@ -69,7 +69,7 @@ def decode(ibytes):
 
     while ibytes:
         byte = ibytes.pop(0)
-        count = (byte & 0x7f) + 1
+        count = (byte & 0x7F) + 1
 
         if byte & 0x80:
             byte = ibytes.pop(0)
@@ -79,4 +79,3 @@ def decode(ibytes):
                 obytes.append(ibytes.pop(0))
 
     return obytes
-

@@ -1,21 +1,20 @@
 from collections import Counter
 
-from . import codes, code, decode
+from huffman import make_codes, code, decode
 
 
 def test_codes():
-    c = Counter(bytearray('aabc', encoding='utf-8'))
+    counter = Counter(bytearray('aabc', encoding='utf-8'))
 
-    assert codes(c) == {ord('a'): '0', ord('b'): '11', ord('c'): '10'}
+    assert make_codes(counter) == {ord('a'): '0', ord('b'): '11', ord('c'): '10'}
 
 
 def test_code_decode():
-    s = bytearray('aabc', encoding='utf-8')
-    c = codes(Counter(s))
+    string = bytearray('aabc', encoding='utf-8')
+    codes = make_codes(Counter(string))
 
-    length, coded_s = code(s, c)
+    length, coded = code(string, codes)
 
     assert length == 6
 
-    assert decode(coded_s, c, length) == s
-
+    assert decode(coded, codes, length) == string

@@ -17,7 +17,7 @@ def byte2bits(byte):
     bits = [0] * 8
     for i in range(8):
         bits[i] = (byte & (1 << (7 - i))) >> (7 - i)
-    
+
     return bits
 
 
@@ -42,10 +42,10 @@ class BitBuffer:
 
     """
 
-    def __init__(self, bytes=bytearray()):
+    def __init__(self, bytes_=bytearray()):
         self.bits = bytearray()
-        while len(bytes):
-            self.bits.extend(byte2bits(bytes.pop(0)))
+        while len(bytes_):
+            self.bits.extend(byte2bits(bytes_.pop(0)))
 
     def __len__(self):
         return len(self.bits)
@@ -59,20 +59,20 @@ class BitBuffer:
             Bytearray that contains all data.
 
         """
-        
-        bytes = bytearray()
-        
+
+        bytes_ = bytearray()
+
         full = len(self.bits) // 8 * 8
-        
+
         for i in range(0, full, 8):
             bits = self.bits[i : i + 8]
-            bytes.append(bits2byte(bits))
-        
+            bytes_.append(bits2byte(bits))
+
         remains = 8 - len(self.bits) % 8
-        bits = list(self.bits[full :]) + [0] * remains
-        bytes.append(bits2byte(bits))
-        
-        return bytes
+        bits = list(self.bits[full:]) + [0] * remains
+        bytes_.append(bits2byte(bits))
+
+        return bytes_
 
     def push(self, bit):
         """Push given bit to buffer.
@@ -82,7 +82,7 @@ class BitBuffer:
         bit: int
             Input bit.
         """
-       
+
         if bit not in (0, 1):
             raise ValueError
 
@@ -99,4 +99,3 @@ class BitBuffer:
         """
 
         return self.bits.pop(0)
-

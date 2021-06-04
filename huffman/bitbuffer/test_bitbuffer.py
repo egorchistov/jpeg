@@ -1,6 +1,6 @@
 import pytest
 
-from . import bits2byte, byte2bits, BitBuffer
+from huffman.bitbuffer import bits2byte, byte2bits, BitBuffer
 
 
 def test_bits2byte():
@@ -28,23 +28,22 @@ def test_byte2bits_incorrect_byte():
 
 
 def test_bitbuffer():
-    b = BitBuffer()
+    bbuf = BitBuffer()
 
-    b.push(1)
-    assert b.to_bytearray() == bytearray([128])
+    bbuf.push(1)
+    assert bbuf.to_bytearray() == bytearray([128])
 
-    b.push(0)
-    assert len(b) == 2
-    assert b.pop() == 1
-    assert b.pop() == 0
+    bbuf.push(0)
+    assert len(bbuf) == 2
+    assert bbuf.pop() == 1
+    assert bbuf.pop() == 0
 
 
 def test_bitbuffer_incorrect():
-    b = BitBuffer()
+    bbuf = BitBuffer()
 
     with pytest.raises(ValueError):
-        b.push(2)
+        bbuf.push(2)
 
     with pytest.raises(IndexError):
-        b.pop()
-
+        bbuf.pop()
