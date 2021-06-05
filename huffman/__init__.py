@@ -1,6 +1,6 @@
 from heapq import heappush, heappop, heapify
 
-from huffman.bitbuffer import BitBuffer
+from bitbuffer import BitBuffer
 
 
 class Node:
