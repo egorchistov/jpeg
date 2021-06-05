@@ -33,11 +33,15 @@ import itertools
 
 
 def code(ibytes):
+    """Apply run-length encoding to ibytes."""
+
     def flush_uniques():
         nonlocal uniques, obytes
 
         while uniques:
-            obytes.append(len(uniques[:128]) - 1)
+            count = len(uniques[:128])
+
+            obytes.append(0x00 + count - 1)
             obytes.extend(uniques[:128])
             del uniques[:128]
 
@@ -65,6 +69,8 @@ def code(ibytes):
 
 
 def decode(ibytes):
+    """Decode ibytes from run-length-encoding."""
+
     obytes = bytearray()
 
     while ibytes:
@@ -75,7 +81,7 @@ def decode(ibytes):
             byte = ibytes.pop(0)
             obytes.extend([byte] * count)
         else:
-            for _ in range(count):
-                obytes.append(ibytes.pop(0))
+            obytes.extend(ibytes[:count])
+            del ibytes[:count]
 
     return obytes
